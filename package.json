@@ -1,6 +1,6 @@
 {
   "name": "disco-k8s",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "scripts": {
     "build": "tsc",
@@ -20,7 +20,6 @@
     "esm": true
   },
   "main": "dist/index.js",
-
   "repository": {
     "type": "git",
     "url": "https://github.com/alonrez/disco-k8s.git"
@@ -30,7 +29,6 @@
     "url": "https://github.com/alonrez/disco-k8s/issues"
   },
   "types": "dist/index.d.ts",
-
   "dependencies": {
     "@kubernetes/client-node": "1.2.0",
     "commander": "2.20.3"
