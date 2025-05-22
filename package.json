@@ -1,0 +1,33 @@
+{
+  "name": "disco-k8s",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "prepare": "npm run build",
+    "dev": "node --loader ts-node/esm src/index.ts",
+    "test-scale":      "node --loader ts-node/esm tests/scale.test.ts",
+    "test-auto-scale": "node --loader ts-node/esm tests/auto-scale.test.ts",
+    "test-hpa":        "node --loader ts-node/esm tests/hpa.test.ts",
+    "test-vertical-scale": "node --loader ts-node/esm tests/vertical-scale.test.ts",
+    "test-horizontal-scale": "node --loader ts-node/esm tests/horizontal-scale.test.ts"
+
+  },
+  "bin": {
+    "disco-k8s": "./dist/index.js"
+  },
+  "ts-node": {
+    "esm": true
+  },
+  "dependencies": {
+    "@kubernetes/client-node": "1.2.0",
+    "commander": "2.20.3"
+  },
+  "devDependencies": {
+    "@types/commander": "2.12.5",
+    "@types/node": "^22.15.21",
+    "@types/ws": "^8.18.1",
+    "ts-node": "",
+    "typescript": "^5.8.3"
+  }
+}
