@@ -6,15 +6,15 @@
     "build": "tsc",
     "prepare": "npm run build",
     "dev": "node --loader ts-node/esm src/index.ts",
-    "test-scale":      "node --loader ts-node/esm tests/scale.test.ts",
+    "test-hpa": "node --loader ts-node/esm tests/hpa.test.ts",
+    "test-metrics": "node --loader ts-node/esm tests/metrics.test.ts",
+    "test-scale": "node --loader ts-node/esm tests/scale.test.ts",
     "test-auto-scale": "node --loader ts-node/esm tests/auto-scale.test.ts",
-    "test-hpa":        "node --loader ts-node/esm tests/hpa.test.ts",
     "test-vertical-scale": "node --loader ts-node/esm tests/vertical-scale.test.ts",
     "test-horizontal-scale": "node --loader ts-node/esm tests/horizontal-scale.test.ts"
-
   },
   "bin": {
-    "disco-k8s": "./dist/index.js"
+    "disco-k8s": "./dist/cli.js"
   },
   "ts-node": {
     "esm": true

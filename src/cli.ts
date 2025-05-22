@@ -1,8 +1,7 @@
-
+#!/usr/bin/env node
 import { Command } from 'commander';
 import { HpaManager } from './hpa.js';
 import { MetricsClient } from './metrics.js';
-import { VerticalScaleOpts } from './types/index.js';
 
 
 const program = new Command();
@@ -39,8 +38,12 @@ program
   .command('hscale <deployment>')
   .description('Set the number of replicas for a Deployment')
   .option('-n, --namespace <ns>', 'K8s namespace', 'default')
-  .requiredOption('-r, --replicas <num>', 'desired replica count', (v: any) => parseInt(v, 10))
+  .option('-r, --replicas <num>', 'desired replica count', (v) => parseInt(v, 10))
   .action(async (name: string, opts: any) => {
+    if (opts.replicas == null || isNaN(opts.replicas)) {
+      console.error('Error: --replicas <num> is required');
+      process.exit(1);
+    }
     const m = new MetricsClient();
     await m.init();
     console.log(`Scaling ${name} → ${opts.replicas} replicas in namespace ${opts.namespace}…`);
@@ -50,57 +53,48 @@ program
 
 
   program
-  .command('vertical-scale <deployment>')
+  .command('vscale <deployment>')
   .description('Patch CPU/memory on one container or all containers')
   .option('-c, --container <name>', 'container name')
   .option('--all', 'apply to all containers')
-  .requiredOption('--req-cpu <q>', 'cpu request (e.g. "200m")')
-  .requiredOption('--lim-cpu <q>', 'cpu limit   (e.g. "1")')
-  .requiredOption('--req-mem <q>', 'memory request (e.g. "256Mi")')
-  .requiredOption('--lim-mem <q>', 'memory limit   (e.g. "512Mi")')
-  .option('-n, --namespace <ns>', 'K8s namespace', 'default')
-  .action(async (deployment: string, rawOpts: any) => {
-    // build our discriminated union
-    let opts: VerticalScaleOpts;
-    if (rawOpts.all) {
-      opts = {
-        target: 'all',
-        namespace: rawOpts.namespace,
-        reqCpu: rawOpts.reqCpu,
-        limCpu: rawOpts.limCpu,
-        reqMem: rawOpts.reqMem,
-        limMem: rawOpts.limMem,
-      };
-    } else if (rawOpts.container) {
-      opts = {
-        target: 'containerName',
-        containerName: rawOpts.container,
-        namespace: rawOpts.namespace,
-        reqCpu: rawOpts.reqCpu,
-        limCpu: rawOpts.limCpu,
-        reqMem: rawOpts.reqMem,
-        limMem: rawOpts.limMem,
-      };
-    } else {
+  .option('--req-cpu <q>', 'cpu request (e.g. "200m")')
+  .option('--lim-cpu <q>', 'cpu limit   (e.g. "1")')
+  .option('--req-mem <q>', 'memory request (e.g. "256Mi")')
+  .option('--lim-mem <q>', 'memory limit   (e.g. "512Mi")')
+  .option('-n, --namespace <ns>', 'namespace', 'default')
+  .action(async (name, opts) => {
+    const m = new MetricsClient();
+
+    // manual checks for required flags:
+    if (!opts.all && !opts.container) {
       console.error('Error: you must specify either --container or --all');
       process.exit(1);
     }
+    for (const flag of ['reqCpu','limCpu','reqMem','limMem'] as const) {
+      if (!opts[flag]) {
+        console.error(`Error: --${flag.replace(/([A-Z])/g,'-$1').toLowerCase()} is required`);
+        process.exit(1);
+      }
+    }
 
-    const m = new MetricsClient();
-    await m.init();
-    await m.verticalScaleDeployment(deployment, opts);
+    // call your method
+    await m.verticalScaleDeployment(name, {
+      target: opts.all ? 'all' : 'containerName',
+      ...(opts.all
+        ? { namespace: opts.namespace, reqCpu: opts.reqCpu, limCpu: opts.limCpu, reqMem: opts.reqMem, limMem: opts.limMem }
+        : { containerName: opts.container, namespace: opts.namespace, reqCpu: opts.reqCpu, limCpu: opts.limCpu, reqMem: opts.reqMem, limMem: opts.limMem }),
+    });
     console.log('✅ vertical scale applied');
   });
-
 
 
 program
 .command('watch <deployment>')
 .description('Watch pods and auto-scale on every add/update/delete')
 .option('-n, --namespace <ns>',   'namespace', 'default')
-.option('--cpu <n>',     'CPU cores threshold',    parseFloat, 0.5)
-.option('--up <r>',      'scale-up replicas',       parseInt,   5)
-.option('--down <r>',    'scale-down replicas',     parseInt,   1)
+.option('--cpu <n>',  'CPU cores threshold',    n => parseFloat(n), 0.5)
+.option('--up <r>',   'scale-up replicas',      r => parseInt(r, 10), 5)
+.option('--down <r>', 'scale-down replicas',    r => parseInt(r, 10), 1)
 .action(async (name, opts) => {
   const m = new MetricsClient();
   await m.init();
@@ -113,6 +107,33 @@ program
   );
 });
 
+program
+  .command('metrics <deployment>')
+  .description('Show CPU/memory metrics for a Deployment')
+  .option('-n, --namespace <ns>', 'K8s namespace', 'default')
+  .option('--raw', 'output raw pod metrics JSON', false)
+  .action(async (name, opts) => {
+    const m = new MetricsClient();
+    await m.init();
+
+    if (opts.raw) {
+      // raw pod metrics from Metrics API
+      const raw = await m.getPodMetrics(opts.namespace);
+      console.log(JSON.stringify(raw, null, 2));
+    } else {
+      // aggregated per-deployment
+      const { cpuCores, memoryBytes, raw } =
+        await m.getDeploymentMetrics(name, opts.namespace);
+
+      const podCount = raw.items.length;
+      console.log(`Deployment: ${name}`);
+      console.log(`  Pods:   ${podCount}`);
+      console.log(`  CPU:    ${cpuCores.toFixed(2)} cores`);
+      console.log(
+        `  Memory: ${(memoryBytes / 2 ** 20).toFixed(1)} MiB`
+      );
+    }
+  });
 
 program.parse(process.argv);
 
