@@ -2,29 +2,28 @@
 A TypeScript-first CLI and library for Kubernetes: metrics aggregation, DIY scaling, HPA management, vertical resource tuning, and event-driven autoscaling.
 
 # 🚀 Features
-- Metrics: fetch raw PodMetrics or aggregate CPU/memory per Deployment
+ **Metrics**: fetch raw PodMetrics or aggregate CPU/memory per Deployment
 
-- DIY Scaling (hscale): set exact replica count
+ **DIY Scaling (hscale)**: set exact replica count
 
-- Conditional Autoscale (autoscale): scale up/down based on avg CPU
+ **Conditional Autoscale (autoscale)**: scale up/down based on avg CPU
 
-- HPA Management (ensure-hpa): create or patch HorizontalPodAutoscaler
+ **HPA Management (ensure-hpa)**: create or patch HorizontalPodAutoscaler
 
-- Vertical Scale (vscale): bump CPU/memory requests & limits on one or all containers
+ **Vertical Scale (vscale)**: bump CPU/memory requests & limits on one or all containers
 
-- Watch Mode (watch): real-time autoscaling on Pod add/update/delete events
+ **Watch Mode (watch)**: real-time autoscaling on Pod add/update/delete events
 
-- Fully Typed: built with @kubernetes/client-node, ESM, and TS types
+ **Fully Typed**: built with @kubernetes/client-node, ESM, and TS types
 
-- Standalone Library: use MetricsClient & HpaManager in your own code
+ **Standalone Library**: use MetricsClient & HpaManager in your own code
 
 
 # 💿 Installation
 ``` bash
 npm install -g disco-k8s
 # or locally for development:
-npm install
-npm link
+npm install disco-k8s
 ```
 
 # 🏁 Quickstart
@@ -174,7 +173,7 @@ try {
 ``` typescript
   // -- patch resources on “my-container” only
   await metrics.verticalScaleDeployment(deployment, {
-    options: 'containerName',
+    target: 'containerName',
     containerName: 'my-container',
     namespace,
     reqCpu: '200m',
@@ -187,6 +186,7 @@ try {
 ### 8) Event-driven watch & auto-scale (watch)
 ``` typescript
   // -- this will run indefinitely, scaling on every Pod event
+  // -- cpuThreshold: 0.5, scaleUp to: 5, scaleDown to: 1
   await metrics.watchAndAutoScale(deployment, namespace, 0.5, 5, 1);
 ```
 
