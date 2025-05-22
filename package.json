@@ -19,6 +19,14 @@
   "ts-node": {
     "esm": true
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alonrez/disco-k8s.git"
+  },
+  "homepage": "https://github.com/alonrez/disco-k8s/blob/main/README.md",
+  "bugs": {
+    "url": "https://github.com/alonrez/disco-k8s/issues"
+  },
   "dependencies": {
     "@kubernetes/client-node": "1.2.0",
     "commander": "2.20.3"
