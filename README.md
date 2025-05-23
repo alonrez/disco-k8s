@@ -29,27 +29,27 @@ npm install disco-k8s
 # 🏁 Quickstart
 ``` bash 
 # Show aggregated Deployment metrics
-disco-k8s metrics my-app --namespace default
+disco metrics my-app --namespace default
 
 # Scale Deployment to 3 replicas
-disco-k8s hscale my-app --replicas 3
+disco hscale my-app --replicas 3
 
 # Conditional autoscale: CPU >0.5 → 5 replicas, <0.25 → 1 replica
-disco-k8s autoscale my-app \
+disco autoscale my-app \
   --cpu 0.5 --up 5 --down 1
 
 # Ensure HPA (min=1, max=10, target CPU%=50)
-disco-k8s ensure-hpa my-app \
+disco ensure-hpa my-app \
   --min 1 --max 10 --cpu-percent 50
 
 # Vertical scale: set container resources
-disco-k8s vscale my-app \
+disco vscale my-app \
   --container my-container \
   --req-cpu 200m --lim-cpu 1 \
   --req-mem 256Mi --lim-mem 512Mi
 
 # Watch mode: event-driven autoscale
-disco-k8s watch my-app \
+disco watch my-app \
   --cpu 0.5 --up 5 --down 1
 ```
 
@@ -58,33 +58,33 @@ disco-k8s watch my-app \
 Show CPU/memory metrics for a Deployment:
 ``` bash 
 # aggregated view
-disco-k8s metrics my-app --namespace default
+disco metrics my-app --namespace default
 
 # raw PodMetrics JSON
-disco-k8s metrics my-app --namespace default --raw
+disco metrics my-app --namespace default --raw
 ```
 - hscale <deployment>
 Set exact replica count:
 ``` bash
-disco-k8s hscale my-app --replicas 3
+disco hscale my-app --replicas 3
 ```
 - autoscale <deployment>
 DIY conditional autoscale on avg CPU:
 ``` bash
-disco-k8s autoscale my-app \
+disco autoscale my-app \
   --cpu 0.5 --up 5 --down 1
 ```
 - ensure-hpa <deployment>
 Patch CPU/memory on one or all containers:
 ``` bash 
 # single container
-disco-k8s vscale my-app \
+disco vscale my-app \
   --container my-container \
   --req-cpu 200m --lim-cpu 1 \
   --req-mem 256Mi --lim-mem 512Mi
 
 # all containers
-disco-k8s vscale my-app \
+disco vscale my-app \
   --all \
   --req-cpu 200m --lim-cpu 1 \
   --req-mem 256Mi --lim-mem 512Mi
@@ -92,7 +92,7 @@ disco-k8s vscale my-app \
 - watch <deployment>
 Event-driven autoscaling on Pod events:
 ``` bash 
-disco-k8s watch my-app \
+disco watch my-app \
   --cpu 0.5 --up 5 --down 1
 ```
 
@@ -134,7 +134,8 @@ async function main() {
 ```
 ### 4) DIY horizontal scaling (hscale)
 ``` typescript
-  await metrics.scaleDeployment(deployment, namespace, /* replicas */ 3);
+  const desiredReplicas: number = 3
+  await metrics.scaleDeploymentReplace(deployment, namespace, desiredReplicas);
   console.log('Scaled to 3 replicas');
 ```
 ### 5) Conditional autoscale (autoscale)

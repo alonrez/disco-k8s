@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import './index.js';
 import { Command } from 'commander';
 import { HpaManager } from './hpa.js';
 import { MetricsClient } from './metrics.js';

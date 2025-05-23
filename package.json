@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
+    "build:cli": "esbuild src/cli.ts --bundle --platform=node --format=cjs --outfile=dist/cli.cjs",
     "prepare": "npm run build",
     "dev": "node --loader ts-node/esm src/index.ts",
     "test-hpa": "node --loader ts-node/esm tests/hpa.test.ts",
@@ -14,7 +15,8 @@
     "test-horizontal-scale": "node --loader ts-node/esm tests/horizontal-scale.test.ts"
   },
   "bin": {
-    "disco-k8s": "./dist/cli.js"
+    "disco-k8s": "./dist/cli.cjs",
+    "disco": "./dist/cli.cjs"
   },
   "ts-node": {
     "esm": true
@@ -37,6 +39,7 @@
     "@types/commander": "2.12.5",
     "@types/node": "^22.15.21",
     "@types/ws": "^8.18.1",
+    "esbuild": "^0.25.4",
     "ts-node": "",
     "typescript": "^5.8.3"
   }
